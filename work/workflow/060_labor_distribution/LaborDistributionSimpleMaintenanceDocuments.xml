@@ -1,0 +1,139 @@
+<!--
+ Copyright 2012 The Kuali Foundation
+ 
+ Licensed under the Educational Community License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http://www.opensource.org/licenses/ecl2.php
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<data xmlns="ns:workflow" xsi:schemaLocation="ns:workflow resource:WorkflowData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <documentTypes xmlns="ns:workflow/DocumentType" xsi:schemaLocation="ns:workflow/DocumentType resource:DocumentType">
+    <documentType>
+      <name>
+        BCAL
+      </name>
+      <parent>
+        LDSM
+      </parent>
+      <label>
+        Labor Benefits Calculation
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Flaborbenefitscalculation.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        BENT
+      </name>
+      <parent>
+        LDSM
+      </parent>
+      <label>
+        Labor Benefits Type
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Flaborbenefitstype.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        LOBJ
+      </name>
+      <parent>
+        LDSM
+      </parent>
+      <label>
+        Labor Object Code
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Flaborobjectcode.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        LOBN
+      </name>
+      <parent>
+        LDSM
+      </parent>
+      <label>
+        Labor Object Code Benefits Maintenance Document
+      </label>
+      <helpDefinitionURL>
+      	${kfs.externalizable.help.url}/default.htm?turl=WordDocuments%2Flaborobjectcodebenefits.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        POGR
+      </name>
+      <parent>
+        LDSM
+      </parent>
+      <label>
+        Labor Position Object Group Code Maintenance Document
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Flaborpositionobjectgroupcode.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        BNRC
+      </name>
+      <parent>
+        LDSM
+      </parent>
+      <label>
+        Labor Benefit Rate Category
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2FlaborBenefitRateCategory.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>    
+  </documentTypes>
+</data>

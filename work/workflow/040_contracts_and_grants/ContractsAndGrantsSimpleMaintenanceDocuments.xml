@@ -1,0 +1,299 @@
+<!--
+ Copyright 2012 The Kuali Foundation
+ 
+ Licensed under the Educational Community License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http://www.opensource.org/licenses/ecl2.php
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<data xmlns="ns:workflow" xsi:schemaLocation="ns:workflow resource:WorkflowData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <documentTypes xmlns="ns:workflow/DocumentType" xsi:schemaLocation="ns:workflow/DocumentType resource:DocumentType">
+    <documentType>
+      <name>
+        AGCY
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Agency
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fagency.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        AGTY
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Agency Type
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fagencytype.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        AWDS
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Award Status
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fawardstatus.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        GDES
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Grant Description
+      </label>
+      <helpDefinitionURL>
+      	default.htm?turl=WordDocuments%2Fgrantdescription.htm
+       </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        ICRA
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Indirect Cost Recovery Exclusion By Account
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Findirectcostrecoveryexclusionbyaccount.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        ICRE
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Indirect Cost Recovery Rate
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Findirectcostrecoveryrate.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        ITYP
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Indirect Cost Recovery Type
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Findirectcostrecoverytype.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        LFGR
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Letter Of Credit Fund Group
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fletterofcreditfundgroup.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        PATY
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Proposal Type
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fproposaltype.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        PURP
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Proposal Purpose
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fproposalpurpose.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        PRST
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Proposal Status
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fproposalstatus.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        RRT
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Research Risk Type
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fresearchrisktype.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        RTCM
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Research Type
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fresearchtypemaintenancedocument.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+    <documentType>
+      <name>
+        SUBC
+      </name>
+      <parent>
+        CGSM
+      </parent>
+      <label>
+        Sub-Contractor
+      </label>
+      <helpDefinitionURL>
+        default.htm?turl=WordDocuments%2Fsubcontractor.htm
+      </helpDefinitionURL>
+      <active>
+        true
+      </active>
+      <routingVersion>
+        2
+      </routingVersion>
+    </documentType>
+  </documentTypes>
+</data>
