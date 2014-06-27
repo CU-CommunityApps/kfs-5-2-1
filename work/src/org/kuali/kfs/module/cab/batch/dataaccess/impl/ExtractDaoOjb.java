@@ -27,18 +27,10 @@ import org.kuali.kfs.module.cab.CabConstants;
 import org.kuali.kfs.module.cab.CabPropertyConstants;
 import org.kuali.kfs.module.cab.batch.dataaccess.ExtractDao;
 import org.kuali.kfs.module.cab.businessobject.BatchParameters;
-import org.kuali.kfs.module.purap.PurapConstants;
 import org.kuali.kfs.module.purap.businessobject.CreditMemoAccountRevision;
 import org.kuali.kfs.module.purap.businessobject.PaymentRequestAccountRevision;
 import org.kuali.kfs.module.purap.businessobject.PurchaseOrderAccount;
-import org.kuali.kfs.sys.context.SpringContext;
-import org.kuali.kfs.sys.document.service.FinancialSystemDocumentService;
 import org.kuali.rice.core.framework.persistence.ojb.dao.PlatformAwareDaoBaseOjb;
-import org.kuali.rice.kew.api.KewApiServiceLocator;
-import org.kuali.rice.kew.api.document.search.DocumentSearchCriteria;
-import org.kuali.rice.kew.api.document.search.DocumentSearchResult;
-import org.kuali.rice.kew.api.document.search.DocumentSearchResults;
-import org.kuali.rice.krad.util.GlobalVariables;
 
 public class ExtractDaoOjb extends PlatformAwareDaoBaseOjb implements ExtractDao {
 
@@ -83,9 +75,51 @@ public class ExtractDaoOjb extends PlatformAwareDaoBaseOjb implements ExtractDao
     }
 
     /**
-     * @see org.kuali.kfs.module.cab.batch.dataaccess.ExtractDao#findPreTaggablePOAccounts(org.kuali.kfs.module.cab.businessobject.BatchParameters)
+     * @see org.kuali.kfs.module.cab.batch.dataaccess.ExtractDao#findPreTaggablePOAccounts(org.kuali.kfs.module.cab.businessobject.BatchParameters, java.util.List)
      */
     @Override
+    public Collection<PurchaseOrderAccount> findPreTaggablePOAccounts(BatchParameters batchParameters, List<String> docNumbersAwaitingPurchaseOrderStatus) {
+        Criteria statusCodeCond1 = new Criteria();
+        statusCodeCond1.addEqualTo(CabPropertyConstants.PreTagExtract.PURAP_CAPITAL_ASSET_SYSTEM_STATE_CODE, CabConstants.CAPITAL_ASSET_SYSTEM_STATE_CODE_NEW);
+
+        Criteria statusCodeOrCond = new Criteria();
+        statusCodeOrCond.addIsNull(CabPropertyConstants.PreTagExtract.PURAP_CAPITAL_ASSET_SYSTEM_STATE_CODE);
+        statusCodeOrCond.addOrCriteria(statusCodeCond1);
+
+        Criteria criteria = new Criteria();
+        Timestamp lastRunTimestamp = new Timestamp(((java.util.Date) batchParameters.getLastRunDate()).getTime());
+        criteria.addGreaterThan(CabPropertyConstants.PreTagExtract.PO_INITIAL_OPEN_TIMESTAMP, lastRunTimestamp);
+        criteria.addAndCriteria(statusCodeOrCond);
+        criteria.addGreaterOrEqualThan(CabPropertyConstants.PreTagExtract.PURAP_ITEM_UNIT_PRICE, batchParameters.getCapitalizationLimitAmount());
+
+        if (!batchParameters.getExcludedChartCodes().isEmpty()) {
+            criteria.addNotIn(CabPropertyConstants.PreTagExtract.CHART_OF_ACCOUNTS_CODE, batchParameters.getExcludedChartCodes());
+        }
+
+        if (!batchParameters.getExcludedSubFundCodes().isEmpty()) {
+            criteria.addNotIn(CabPropertyConstants.PreTagExtract.ACCOUNT_SUB_FUND_GROUP_CODE, batchParameters.getExcludedSubFundCodes());
+        }
+
+        if (!batchParameters.getIncludedFinancialObjectSubTypeCodes().isEmpty()) {
+            criteria.addIn(CabPropertyConstants.PreTagExtract.FINANCIAL_OBJECT_SUB_TYPE_CODE, batchParameters.getIncludedFinancialObjectSubTypeCodes());
+        }
+
+        QueryByCriteria query = new QueryByCriteria(PurchaseOrderAccount.class, criteria);
+        Collection<PurchaseOrderAccount> purchaseOrderAccounts = getPersistenceBrokerTemplate().getCollectionByQuery(query);
+
+        Collection<PurchaseOrderAccount> purchaseOrderAcctsAwaitingPOOpenStatus = new ArrayList<PurchaseOrderAccount>();
+        for (PurchaseOrderAccount purchaseOrderAccount : purchaseOrderAccounts) {
+            if (docNumbersAwaitingPurchaseOrderStatus.contains(purchaseOrderAccount.getDocumentNumber())) {
+                purchaseOrderAcctsAwaitingPOOpenStatus.add(purchaseOrderAccount);
+            }
+        }
+        return purchaseOrderAcctsAwaitingPOOpenStatus;
+    }
+
+    /**
+     * @see org.kuali.kfs.module.cab.batch.dataaccess.ExtractDao#findPreTaggablePOAccounts(org.kuali.kfs.module.cab.businessobject.BatchParameters)
+     */
+    @Override @Deprecated
     public Collection<PurchaseOrderAccount> findPreTaggablePOAccounts(BatchParameters batchParameters) {
         Criteria statusCodeCond1 = new Criteria();
         statusCodeCond1.addEqualTo(CabPropertyConstants.PreTagExtract.PURAP_CAPITAL_ASSET_SYSTEM_STATE_CODE, CabConstants.CAPITAL_ASSET_SYSTEM_STATE_CODE_NEW);
@@ -115,7 +149,7 @@ public class ExtractDaoOjb extends PlatformAwareDaoBaseOjb implements ExtractDao
         QueryByCriteria query = new QueryByCriteria(PurchaseOrderAccount.class, criteria);
         Collection<PurchaseOrderAccount> purchaseOrderAccounts = getPersistenceBrokerTemplate().getCollectionByQuery(query);
 
-        List<String> docNumbersAwaitingPurchaseOrderStatus = getDocumentsNumbersAwaitingPurchaseOrderOpenStatus();
+        List<String> docNumbersAwaitingPurchaseOrderStatus = new ArrayList<String>();
         Collection<PurchaseOrderAccount> purchaseOrderAcctsAwaitingPOOpenStatus = new ArrayList<PurchaseOrderAccount>();
         for (PurchaseOrderAccount purchaseOrderAccount : purchaseOrderAccounts) {
             if (docNumbersAwaitingPurchaseOrderStatus.contains(purchaseOrderAccount.getDocumentNumber())) {
@@ -123,45 +157,6 @@ public class ExtractDaoOjb extends PlatformAwareDaoBaseOjb implements ExtractDao
             }
         }
         return purchaseOrderAcctsAwaitingPOOpenStatus;
-    }
-
-
-    //needs refactoring to move to service layer.
-    protected List<String> getDocumentsNumbersAwaitingPurchaseOrderOpenStatus() {
-        List<String> receivingDocumentNumbers = new ArrayList<String>();
-
-        DocumentSearchCriteria.Builder documentSearchCriteriaDTO = DocumentSearchCriteria.Builder.create();
-        documentSearchCriteriaDTO.setDocumentTypeName(PurapConstants.PurchaseOrderDocTypes.PURCHASE_ORDER_DOCUMENT);
-        documentSearchCriteriaDTO.setApplicationDocumentStatus(CabConstants.PO_STATUS_CODE_OPEN);
-
-        DocumentSearchCriteria crit = documentSearchCriteriaDTO.build();
-
-        int maxResults = SpringContext.getBean(FinancialSystemDocumentService.class).getMaxResultCap(crit);
-        int iterations = SpringContext.getBean(FinancialSystemDocumentService.class).getFetchMoreIterationLimit();
-
-        for (int i = 0; i < iterations; i++) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Fetch Iteration: "+ i);
-            }
-
-            documentSearchCriteriaDTO.setStartAtIndex(maxResults * i);
-            crit = documentSearchCriteriaDTO.build();
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Max Results: "+documentSearchCriteriaDTO.getStartAtIndex());
-            }
-
-            DocumentSearchResults results = KewApiServiceLocator.getWorkflowDocumentService().documentSearch(
-                    GlobalVariables.getUserSession().getPrincipalId(), crit);
-            if (results.getSearchResults().isEmpty()) {
-                break;
-            }
-            for (DocumentSearchResult resultRow: results.getSearchResults()) {
-                receivingDocumentNumbers.add(resultRow.getDocument().getDocumentId());
-            }
-        }
-
-        return receivingDocumentNumbers;
     }
 
     /**

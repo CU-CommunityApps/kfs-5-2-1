@@ -18,6 +18,7 @@ package org.kuali.kfs.sys.document;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.kuali.kfs.sys.KFSConstants;
 import org.kuali.kfs.sys.businessobject.FinancialSystemDocumentHeader;
@@ -28,6 +29,7 @@ import org.kuali.kfs.sys.service.impl.KfsParameterConstants;
 import org.kuali.rice.core.api.util.type.KualiDecimal;
 import org.kuali.rice.coreservice.framework.parameter.ParameterService;
 import org.kuali.rice.kew.api.WorkflowRuntimeException;
+import org.kuali.rice.kew.api.document.DocumentStatus;
 import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.kew.framework.postprocessor.DocumentRouteLevelChange;
 import org.kuali.rice.kew.framework.postprocessor.DocumentRouteStatusChange;
@@ -84,7 +86,37 @@ public class FinancialSystemTransactionalDocumentBase extends TransactionalDocum
         if (this instanceof AmountTotaling) {
             getFinancialSystemDocumentHeader().setFinancialDocumentTotalAmount(((AmountTotaling) this).getTotalDollarAmount());
         }
+        captureWorkflowHeaderInformation();
         super.prepareForSave();
+    }
+
+    /**
+     * Attempts to capture the document type name, initiator principal id, and KEW document status code to the Financial System Document Header
+     */
+    protected void captureWorkflowHeaderInformation() {
+        if (StringUtils.isBlank(getFinancialSystemDocumentHeader().getInitiatorPrincipalId())) {
+            getFinancialSystemDocumentHeader().setInitiatorPrincipalId(getFinancialSystemDocumentHeader().getWorkflowDocument().getInitiatorPrincipalId());
+        }
+        if (StringUtils.isBlank(getFinancialSystemDocumentHeader().getWorkflowDocumentTypeName())) {
+            getFinancialSystemDocumentHeader().setWorkflowDocumentTypeName(getFinancialSystemDocumentHeader().getWorkflowDocument().getDocumentTypeName());
+        }
+        final String statusCode = getWorkflowDocumentStatusCode(getFinancialSystemDocumentHeader().getWorkflowDocument().getStatus());
+        getFinancialSystemDocumentHeader().setWorkflowDocumentStatusCode(statusCode);
+    }
+
+    /**
+     * Given a DocumentStatus, returns the code for that status.  Allows us a shim to change initiated's into saved's
+     * @param status the status to return a code for
+     * @return the code for that stat
+     */
+    protected String getWorkflowDocumentStatusCode(DocumentStatus status) {
+        // we're preparing to save here.  If the save fails, the transaction should roll back - so the fact that the doc header is in saved mode shouldn't
+        // cause problems.  And since org.kuali.rice.krad.service.impl.PostProcessorServiceImpl#doRouteStatusChange will NOT save the document when the
+        // DocStatus is saved, let's simply pre-anticipate that
+        final String statusCode = status.equals(DocumentStatus.INITIATED) ?
+                DocumentStatus.SAVED.getCode() :
+                getFinancialSystemDocumentHeader().getWorkflowDocument().getStatus().getCode();
+        return statusCode;
     }
 
     /**
@@ -117,6 +149,10 @@ public class FinancialSystemTransactionalDocumentBase extends TransactionalDocum
      */
     @Override
     public void doRouteStatusChange(DocumentRouteStatusChange statusChangeEvent) {
+        // set the route status
+        getFinancialSystemDocumentHeader().setWorkflowDocumentStatusCode(getWorkflowDocumentStatusCode(DocumentStatus.fromCode(statusChangeEvent.getNewRouteStatus())));
+        getFinancialSystemDocumentHeader().setApplicationDocumentStatus(getFinancialSystemDocumentHeader().getWorkflowDocument().getApplicationDocumentStatus());
+
         if (getDocumentHeader().getWorkflowDocument().isCanceled()) {
             getFinancialSystemDocumentHeader().setFinancialDocumentStatusCode(KFSConstants.DocumentStatusCodes.CANCELLED);
         }
@@ -143,6 +179,9 @@ public class FinancialSystemTransactionalDocumentBase extends TransactionalDocum
      */
     @Override
     public void doRouteLevelChange(DocumentRouteLevelChange levelChangeEvent) {
+        // grab the new app doc status
+        getFinancialSystemDocumentHeader().setApplicationDocumentStatus(getFinancialSystemDocumentHeader().getWorkflowDocument().getApplicationDocumentStatus());
+
         if (this instanceof AmountTotaling
                 && getDocumentHeader() != null
                 && getParameterService() != null
@@ -152,8 +191,10 @@ public class FinancialSystemTransactionalDocumentBase extends TransactionalDocum
             final KualiDecimal currentTotal = ((AmountTotaling)this).getTotalDollarAmount();
             if (!currentTotal.equals(getFinancialSystemDocumentHeader().getFinancialDocumentTotalAmount())) {
                 getFinancialSystemDocumentHeader().setFinancialDocumentTotalAmount(currentTotal);
-                getBusinessObjectService().save(getFinancialSystemDocumentHeader());
             }
+        }
+        if (this instanceof AmountTotaling || !StringUtils.isBlank(getFinancialSystemDocumentHeader().getApplicationDocumentStatus())) {
+            getBusinessObjectService().save(getFinancialSystemDocumentHeader());
         }
         super.doRouteLevelChange(levelChangeEvent);
     }
@@ -225,6 +266,7 @@ public class FinancialSystemTransactionalDocumentBase extends TransactionalDocum
      * @param applicationDocumentStatus is the app doc status to save
      * @throws WorkflowException
      */
+    @Override
     public void updateAndSaveAppDocStatus(String applicationDocumentStatus) throws WorkflowException {
         getFinancialSystemDocumentHeader().updateAndSaveAppDocStatus(applicationDocumentStatus);
     }
@@ -235,6 +277,7 @@ public class FinancialSystemTransactionalDocumentBase extends TransactionalDocum
      * @return Returns the applicationDocumentStatus
      */
 
+    @Override
     public String getApplicationDocumentStatus() {
         return getFinancialSystemDocumentHeader().getApplicationDocumentStatus();
     }
@@ -244,6 +287,7 @@ public class FinancialSystemTransactionalDocumentBase extends TransactionalDocum
      *
      * @param applicationDocumentStatus The applicationDocumentStatus to set.
      */
+    @Override
     public void setApplicationDocumentStatus(String applicationDocumentStatus) {
         getFinancialSystemDocumentHeader().setApplicationDocumentStatus(applicationDocumentStatus);
     }

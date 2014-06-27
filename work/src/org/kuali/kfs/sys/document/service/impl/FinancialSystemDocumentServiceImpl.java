@@ -17,9 +17,13 @@ package org.kuali.kfs.sys.document.service.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.kuali.kfs.sys.KFSPropertyConstants;
 import org.kuali.kfs.sys.businessobject.FinancialSystemDocumentHeader;
 import org.kuali.kfs.sys.document.FinancialSystemTransactionalDocument;
 import org.kuali.kfs.sys.document.dataaccess.FinancialSystemDocumentDao;
@@ -27,9 +31,11 @@ import org.kuali.kfs.sys.document.service.FinancialSystemDocumentService;
 import org.kuali.rice.coreservice.framework.CoreFrameworkServiceLocator;
 import org.kuali.rice.coreservice.framework.parameter.ParameterService;
 import org.kuali.rice.kew.api.KewApiConstants;
+import org.kuali.rice.kew.api.document.DocumentStatus;
 import org.kuali.rice.kew.api.document.search.DocumentSearchCriteria;
 import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.krad.document.Document;
+import org.kuali.rice.krad.service.BusinessObjectService;
 import org.kuali.rice.krad.service.DocumentAdHocService;
 import org.kuali.rice.krad.service.DocumentService;
 import org.kuali.rice.krad.util.KRADConstants;
@@ -41,10 +47,11 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Transactional
 public class FinancialSystemDocumentServiceImpl implements FinancialSystemDocumentService {
-    private FinancialSystemDocumentDao financialSystemDocumentDao;
-    private DocumentService documentService;
-    private ParameterService parameterService;
+    protected FinancialSystemDocumentDao financialSystemDocumentDao;
+    protected DocumentService documentService;
+    protected ParameterService parameterService;
     protected DocumentAdHocService documentAdHocService;
+    protected BusinessObjectService businessObjectService;
 
     private static final int DEFAULT_FETCH_MORE_ITERATION_LIMIT = 10;
 
@@ -70,6 +77,72 @@ public class FinancialSystemDocumentServiceImpl implements FinancialSystemDocume
         return returnDocuments;
     }
 
+    /**
+     * @see org.kuali.kfs.sys.document.service.FinancialSystemDocumentService#findByWorkflowStatusCode(java.lang.Class, org.kuali.rice.kew.api.document.DocumentStatus)
+     */
+    @Override
+    public <T extends Document> Collection<T> findByWorkflowStatusCode(Class<T> clazz, DocumentStatus docStatus) throws WorkflowException {
+        Map<String, Object> fieldValues = new HashMap<String, Object>();
+        fieldValues.put(KFSPropertyConstants.DOCUMENT_HEADER+"."+KFSPropertyConstants.WORKFLOW_DOCUMENT_STATUS_CODE, docStatus.getCode());
+        final Collection<T> docsWithoutWorfklowHeaders = getBusinessObjectService().findMatching(clazz, fieldValues);
+        List<T> results = new ArrayList<T>();
+        for (T doc : docsWithoutWorfklowHeaders) {
+            final T docWithWorkflowHeader = (T)getDocumentService().getByDocumentHeaderId(doc.getDocumentNumber());
+            results.add(docWithWorkflowHeader);
+        }
+        return results;
+    }
+
+    /**
+     *
+     * @see org.kuali.kfs.sys.document.service.FinancialSystemDocumentService#findByWorkflowStatusCode(org.kuali.rice.kew.api.document.DocumentStatus)
+     */
+    @Override
+    public Collection<FinancialSystemDocumentHeader> findByWorkflowStatusCode(DocumentStatus docStatus) {
+        Map<String, Object> fieldValues = new HashMap<String, Object>();
+        fieldValues.put(KFSPropertyConstants.WORKFLOW_DOCUMENT_STATUS_CODE, docStatus.getCode());
+
+        return this.getBusinessObjectService().findMatching(FinancialSystemDocumentHeader.class, fieldValues);
+    }
+
+    /**
+     * @see org.kuali.kfs.sys.document.service.FinancialSystemDocumentService#findByApplicationDocumentStatus(java.lang.Class, java.lang.String)
+     */
+    @Override
+    public <T extends Document> Collection<T> findByApplicationDocumentStatus(Class<T> clazz, String applicationDocumentStatus) throws WorkflowException {
+        Map<String, Object> fieldValues = new HashMap<String, Object>();
+        fieldValues.put(KFSPropertyConstants.DOCUMENT_HEADER+"."+KFSPropertyConstants.APPLICATION_DOCUMENT_STATUS, applicationDocumentStatus);
+        final Collection<T> docsWithoutWorfklowHeaders = getBusinessObjectService().findMatching(clazz, fieldValues);
+        List<T> results = new ArrayList<T>();
+        for (T doc : docsWithoutWorfklowHeaders) {
+            final T docWithWorkflowHeader = (T)getDocumentService().getByDocumentHeaderId(doc.getDocumentNumber());
+            results.add(docWithWorkflowHeader);
+        }
+        return results;
+    }
+
+    /**
+     * @see org.kuali.kfs.sys.document.service.FinancialSystemDocumentService#findByApplicationDocumentStatus(java.lang.String)
+     */
+    @Override
+    public Collection<FinancialSystemDocumentHeader> findByApplicationDocumentStatus(String applicationDocumentStatus) {
+        Map<String, Object> fieldValues = new HashMap<String, Object>();
+        fieldValues.put(KFSPropertyConstants.APPLICATION_DOCUMENT_STATUS, applicationDocumentStatus);
+
+        return getBusinessObjectService().findMatching(FinancialSystemDocumentHeader.class, fieldValues);
+    }
+
+    /**
+     * @see org.kuali.kfs.sys.document.service.FinancialSystemDocumentService#findByDocumentNumber(java.lang.String)
+     */
+    @Override
+    public FinancialSystemDocumentHeader findByDocumentNumber(String documentNumber) {
+        Map<String, Object> fieldValues = new HashMap<String, Object>();
+        fieldValues.put(KFSPropertyConstants.DOCUMENT_NUMBER, documentNumber);
+
+        return getBusinessObjectService().findByPrimaryKey(FinancialSystemDocumentHeader.class, fieldValues);
+    }
+
 
     /**
      * Returns the maximum number of results that should be returned from the document search.
@@ -77,6 +150,7 @@ public class FinancialSystemDocumentServiceImpl implements FinancialSystemDocume
      * @param criteria the criteria in which to check for a max results value
      * @return the maximum number of results that should be returned from a document search
      */
+    @Override
     public int getMaxResultCap(DocumentSearchCriteria criteria) {
         int systemLimit = KewApiConstants.DOCUMENT_LOOKUP_DEFAULT_RESULT_CAP;
         String resultCapValue = getParameterService().getParameterValueAsString(KewApiConstants.KEW_NAMESPACE, KRADConstants.DetailTypes.DOCUMENT_SEARCH_DETAIL_TYPE, KewApiConstants.DOC_SEARCH_RESULT_CAP);
@@ -108,6 +182,7 @@ public class FinancialSystemDocumentServiceImpl implements FinancialSystemDocume
         return maxResults;
     }
 
+    @Override
     public int getFetchMoreIterationLimit() {
         int fetchMoreLimit = DEFAULT_FETCH_MORE_ITERATION_LIMIT;
         String fetchMoreLimitValue = CoreFrameworkServiceLocator.getParameterService().getParameterValueAsString(KewApiConstants.KEW_NAMESPACE, KRADConstants.DetailTypes.DOCUMENT_SEARCH_DETAIL_TYPE, KewApiConstants.DOC_SEARCH_FETCH_MORE_ITERATION_LIMIT);
@@ -150,17 +225,14 @@ public class FinancialSystemDocumentServiceImpl implements FinancialSystemDocume
         this.documentAdHocService = documentAdHocService;
     }
 
-
     /**
      * Gets the parameterService attribute.
      *
      * @return Returns the parameterService
      */
-
     public ParameterService getParameterService() {
         return parameterService;
     }
-
 
     /**
      * Sets the parameterService attribute.
@@ -171,8 +243,11 @@ public class FinancialSystemDocumentServiceImpl implements FinancialSystemDocume
         this.parameterService = parameterService;
     }
 
+    public BusinessObjectService getBusinessObjectService() {
+        return businessObjectService;
+    }
 
-
-
-
+    public void setBusinessObjectService(BusinessObjectService businessObjectService) {
+        this.businessObjectService = businessObjectService;
+    }
 }
