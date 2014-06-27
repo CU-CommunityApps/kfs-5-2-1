@@ -1004,10 +1004,10 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     public void updateVendorCommodityCode(PurchaseOrderDocument po) {
         ParameterService params = SpringContext.getBean(ParameterService.class);
         /*we default to adding vendor commodity codes.*/
-        Boolean shouldUpdate= params.getParameterValueAsBoolean(RequisitionDocument.class, PurapParameterConstants.UPDATE_VENDOR_SETTING, Boolean.TRUE);
-        if(shouldUpdate){
+        //Boolean shouldUpdate= params.getParameterValueAsBoolean(RequisitionDocument.class, PurapParameterConstants.UPDATE_VENDOR_SETTING, Boolean.TRUE);
+        //if(shouldUpdate){
             updateVendorCommodityCodeImpl(po);
-        }
+        //}
     }
 
     /**

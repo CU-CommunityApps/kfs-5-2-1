@@ -48,7 +48,6 @@ import org.kuali.rice.kns.service.DictionaryValidationService;
 import org.kuali.rice.krad.bo.DocumentHeader;
 import org.kuali.rice.krad.service.BusinessObjectService;
 import org.kuali.rice.krad.util.GlobalVariables;
-import org.kuali.rice.krad.util.ObjectUtils;
 import org.kuali.rice.location.api.campus.CampusService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -205,7 +204,7 @@ public class CashReceiptServiceImpl implements CashReceiptService {
             CashReceiptDocument cr = (CashReceiptDocument) i.next();
             DocumentHeader docHeader = cr.getDocumentHeader();
             WorkflowDocument workflowDocument = WorkflowDocumentFactory.loadDocument(GlobalVariables.getUserSession().getPrincipalId(), docHeader.getDocumentNumber());
-    
+
             docHeader.setWorkflowDocument(workflowDocument);
         }
     }
@@ -269,12 +268,12 @@ public class CashReceiptServiceImpl implements CashReceiptService {
     public boolean areCashTotalsInvalid(CashReceiptDocument cashReceiptDocument) {
         String documentEntryName = cashReceiptDocument.getDocumentHeader().getWorkflowDocument().getDocumentTypeName();
 
-        boolean isInvalid = isTotalInvalid(cashReceiptDocument, cashReceiptDocument.getTotalCheckAmount(), documentEntryName, KFSPropertyConstants.TOTAL_CHECK_AMOUNT);
+        boolean isInvalid = true; /*isTotalInvalid(cashReceiptDocument, cashReceiptDocument.getTotalCheckAmount(), documentEntryName, KFSPropertyConstants.TOTAL_CHECK_AMOUNT);
         isInvalid |= isTotalInvalid(cashReceiptDocument, cashReceiptDocument.getTotalCashAmount(), documentEntryName, KFSPropertyConstants.TOTAL_CASH_AMOUNT);
         isInvalid |= isTotalInvalid(cashReceiptDocument, cashReceiptDocument.getTotalCoinAmount(), documentEntryName, KFSPropertyConstants.TOTAL_COIN_AMOUNT);
 
         isInvalid |= isTotalInvalid(cashReceiptDocument, cashReceiptDocument.getTotalDollarAmount(), documentEntryName, KFSPropertyConstants.SUM_TOTAL_AMOUNT);
-
+*/
         return isInvalid;
     }
 
